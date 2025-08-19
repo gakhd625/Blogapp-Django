@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<h4>Blog Registration</h4>
+<form method="POST">
+    <table>
+        <tr>
+            <td>Blog Name</td>
+            <td><input name="name" placeholder="My Blog" required></td>
+        <tr>
+            <td>WordPress URL</td>
+            <td><input name="url" placeholder="https://example.com" required></td>
+        </tr>
+        <tr>
+            <td>Username</td>
+            <td><input name="username" placeholder="Username" required></td>
+        </tr>
+        <tr>
+            <td>API Key</td>
+            <td><input type="password" name="apikey" placeholder="API Key" required></td>
+        </tr>
+        <tr>
+            <td>Category</td>
+            <td><input name="category" placeholder="Category1, Category2"></td>
+        </tr>
+    </table>
+    <br>
+    <button type="button" class="btn btn-primary">Check Connection</button>
+    <button type="submit" class="btn btn-primary">Register</button>
+</form>
+<hr>
+<h5>Registered Blogs</h5>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th><th>URL</th><th>Username</th><th>API Key</th><th>Category</th><th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for blog in blogs %}
+        <tr>
+            <td>{{ blog.name }}</td>
+            <td>{{ blog.url }}</td>
+            <td>{{ blog.username }}</td>
+            <td>{{ blog.apikey }}</td>
+            <td>{{ blog.category|join:", " }}</td>
+            <td>
+                <a href="{% url 'blog_delete' blog_name=blog.name %}" class="btn btn-sm btn-danger text-white" style="text-decoration: none;">Delete</a>
+                <a href="{% url 'blog_edit' blog_name=blog.name %}" class="btn btn-sm btn-primary text-white" style="text-decoration: none;">Edit</a>
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

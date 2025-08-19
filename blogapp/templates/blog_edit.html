@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<h4>Edit Blog</h4>
+<form method="POST">
+    <input class="form-control" name="name" value="{{ blog.name }}" required><br>
+    <input class="form-control" name="url" value="{{ blog.url }}" required><br>
+    <input class="form-control" name="username" value="{{ blog.username }}" required><br>
+    <input class="form-control" name="apikey" value="{{ blog.apikey }}" required><br>
+    <label>Category (comma separated):</label>
+    <input class="form-control" name="category" value="{{ blog.category|join:', ' }}"><br>
+    <button type="submit" class="btn btn-primary">Update</button>
+    <a href="{% url 'blog_registration' %}" class="btn btn-danger text-white" style="text-decoration: none;">Back</a>
+</form>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h4>Edit Article</h4>
+<form method="POST">
+    <input type="text" class="form-control" name="title" value="{{ article.title }}">
+    <textarea class="form-control" name="content">{{ article.content }}</textarea>
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>
+{% endblock %}
+    

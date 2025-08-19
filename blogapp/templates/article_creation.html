@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="border: 1px solid #ccc; border-radius: 6px; padding: 20px;">
+    <h4><strong>Article Creation</strong></h4>
+    <form method="POST">
+        <table>
+            <tr>
+                <td style="width: 150px;">Keyword</td>
+                <td><input type="text" name="keyword" placeholder="e.g. AI blog" class="form-control" required></td>
+            </tr>
+            <tr style="height: 15px;"></tr>
+            <tr>
+                <td>Search Engine</td>
+                <td>
+                    <select name="search_engine" class="form-select">
+                        <option value="google">Google</option>
+                        <option value="bing">Bing</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <br>
+        <button type="submit" class="btn btn-primary">Generate Article</button>
+    </form>
+
+    <br><br>
+    <h5><strong>Generated Article Preview</strong></h5>
+    <form method="POST">
+        <textarea name="generated_article" class="form-control" rows="5" readonly>
+(The generated article will be displayed here)
+        </textarea>
+        <br>
+        <table>
+            <tr>
+                <td style="width: 100px;">Target Blog</td>
+                <td style="width: 300px;">
+                    <select name="target_blog" class="form-select">
+                        {% for blog in blogs %}
+                        <option value="{{ blog.name }}">{{ blog.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Post</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+{% endblock %}
