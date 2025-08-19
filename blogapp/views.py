@@ -15,6 +15,9 @@ articles = [
 def home(request):
     return render(request, "home.html")
 
+def blog_view(request):
+    return render(request, "blog_view.html", {"blogs": blogs, "articles": articles})
+
 def blog_registration(request):
     if request.method == "POST":
         blogs.append({

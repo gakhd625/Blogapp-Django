@@ -11,4 +11,5 @@ urlpatterns = [
     path("article-delete/<int:article_id>/", views.article_delete, name="article_delete"),
     path("article-list/", views.article_list, name="article_list"),
     path("admin-panel/", views.admin_panel, name="admin_panel"),
+    path("blog-view/", views.blog_view, name="blog_view"),
 ]
