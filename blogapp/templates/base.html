@@ -62,19 +62,44 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav mx-auto">
                         <li class="nav-item"><a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a></li>
-                        <li class="nav-item"><a class="nav-link {% if request.path == '/blog-registration' %}active{% endif %}" href="/blog-registration">Blog Registration</a></li>
-                        <li class="nav-item"><a class="nav-link {% if request.path == '/article-creation' %}active{% endif %}" href="/article-creation">Article Creation</a></li>
-                        <li class="nav-item"><a class="nav-link {% if request.path == '/article-list' %}active{% endif %}" href="/article-list">Article List</a></li>
-                        <li class="nav-item"><a class="nav-link {% if request.path == '/admin-panel' %}active{% endif %}" href="/admin-panel">Admin Panel</a></li>
+                        {% if user.is_authenticated %}
+                            <li class="nav-item"><a class="nav-link {% if request.path == '/blog-registration' %}active{% endif %}" href="/blog-registration">Blog Registration</a></li>
+                            <li class="nav-item"><a class="nav-link {% if request.path == '/article-creation' %}active{% endif %}" href="/article-creation">Article Creation</a></li>
+                            <li class="nav-item"><a class="nav-link {% if request.path == '/article-list' %}active{% endif %}" href="/article-list">Article List</a></li>
+                            <li class="nav-item"><a class="nav-link {% if request.path == '/admin-panel' %}active{% endif %}" href="/admin-panel">Admin Panel</a></li>
+                        {% endif %}
+                    </ul>
+                    
+                    <!-- Simple Authentication Navigation -->
+                    <ul class="navbar-nav">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout ({{ user.username }})</a></li>
+                        {% else %}
+                            <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>
         </nav>
 
     <div class="container">
+        <!-- Django Messages -->
+        {% if messages %}
+            <div class="mt-3">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
         <div class="main-content">
             {% block content %}{% endblock %}
         </div>
     </div>
 
 </body>
+</html>

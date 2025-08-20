@@ -2,8 +2,20 @@
 {% block content %}
 <h4>Edit Article</h4>
 <form method="POST">
-    <input type="text" class="form-control" name="title" value="{{ article.title }}">
-    <textarea class="form-control" name="content">{{ article.content }}</textarea>
+    {% csrf_token %}
+    <input type="text" class="form-control" name="title" value="{{ article.title }}" required><br>
+    <textarea class="form-control" name="content" rows="10" required>{{ article.content }}</textarea><br>
+    <select name="status" class="form-select">
+        <option value="draft" {% if article.status == 'draft' %}selected{% endif %}>Draft</option>
+        <option value="published" {% if article.status == 'published' %}selected{% endif %}>Published</option>
+        <option value="archived" {% if article.status == 'archived' %}selected{% endif %}>Archived</option>
+    </select><br><br>
+    <select name="blog" class="form-select" required>
+        <option value="">Select a blog</option>
+        {% for blog in form.fields.blog.queryset %}
+        <option value="{{ blog.id }}" {% if blog.id == article.blog.id %}selected{% endif %}>{{ blog.name }}</option>
+        {% endfor %}
+    </select><br><br>
     <button type="submit" class="btn btn-primary">Save Changes</button>
 </form>
 {% endblock %}
