@@ -2,6 +2,31 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+class UserProfile(models.Model):
+    ROLE_CHOICES = [
+        ('user', 'User'),
+        ('admin', 'Admin'),
+    ]
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.get_role_display()}"
+    
+    @property
+    def is_admin(self):
+        return self.role == 'admin'
+    
+    @property
+    def is_user(self):
+        return self.role == 'user'
+
 class Blog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blogs')
     name = models.CharField(max_length=100, unique=True)
@@ -59,3 +84,17 @@ class Article(models.Model):
         words_per_minute = 200
         word_count = len(self.content.split())
         return max(1, round(word_count / words_per_minute))
+
+# Signal to create UserProfile when User is created
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    if hasattr(instance, 'profile'):
+        instance.profile.save()

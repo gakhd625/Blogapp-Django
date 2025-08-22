@@ -6,7 +6,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.utils import timezone
-from .models import Blog, Article
 
 # blogs = [
 #     {"name": "Rakurin's Blog", "url": "https://rakurin.net/blog/", "username": "ra781228", "apikey": "********", "category": ["HELLOW WORLD"]},
@@ -16,7 +15,23 @@ from .models import Blog, Article
 #     {"title": "How to Write a Blog with AI", "date": "2024-06-01 10:00", "status": "Published"},
 #     {"title": "SEO-Friendly Article Structure", "date": "2024-06-01 09:30", "status": "Draft"}
 # ]
+from .models import Blog, Article, UserProfile
+from functools import wraps
 
+def admin_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        try:
+            if not request.user.profile.is_admin:
+                messages.error(request, 'Access denied. Admin privileges required.')
+                return redirect('home')
+        except UserProfile.DoesNotExist:
+            messages.error(request, 'User profile not found.')
+            return redirect('home')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
 def user_register(request):
     if request.user.is_authenticated:
@@ -95,9 +110,13 @@ def user_logout(request):
     messages.success(request, 'You have been logged out successfully.')
     return redirect('home')
 
-# Main Views
 def home(request):
+    if not request.user.is_authenticated:
+        return render(request, "landing.html")
     return render(request, "home.html")
+
+def landing(request):
+    return render(request, "landing.html")
 
 @login_required
 def blog_view(request, id):
@@ -105,7 +124,7 @@ def blog_view(request, id):
     articles = Article.objects.filter(blog_id=id, user=request.user)
     return render(request, "blog_view.html", {"blog": blog, "articles": articles})  
 
-@login_required
+@admin_required
 def blog_registration(request):
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
@@ -166,7 +185,7 @@ def blog_registration(request):
     blogs = Blog.objects.filter(user=request.user)
     return render(request, "blog_registration.html", {"blogs": blogs})
 
-@login_required
+@admin_required
 def blog_edit(request, blog_id):
     blog = get_object_or_404(Blog, id=blog_id, user=request.user)
     
@@ -229,7 +248,7 @@ def blog_edit(request, blog_id):
     
     return render(request, "blog_edit.html", {"blog": blog})
 
-@login_required
+@admin_required
 def blog_delete(request, blog_id):
     blog = get_object_or_404(Blog, id=blog_id, user=request.user)
     
@@ -241,7 +260,7 @@ def blog_delete(request, blog_id):
     
     return render(request, "blog_delete.html", {"blog": blog})
 
-@login_required
+@admin_required
 def article_creation(request):
     if request.method == "POST":
         title = request.POST.get("title", "").strip()
@@ -294,7 +313,7 @@ def article_creation(request):
     form = {"fields": {"blog": {"queryset": blogs}}}
     return render(request, "article_creation.html", {"form": form})
 
-@login_required
+@admin_required
 def article_edit(request, article_id):
     article = get_object_or_404(Article, id=article_id, user=request.user)
     
@@ -348,7 +367,7 @@ def article_edit(request, article_id):
     form = {"fields": {"blog": {"queryset": blogs}}}
     return render(request, "article_edit.html", {"article": article, "form": form})
 
-@login_required
+@admin_required
 def article_delete(request, article_id):
     article = get_object_or_404(Article, id=article_id, user=request.user)
     
@@ -360,11 +379,148 @@ def article_delete(request, article_id):
     
     return render(request, "article_delete.html", {"article": article})
 
-@login_required
+@admin_required
 def article_list(request):
     articles = Article.objects.filter(user=request.user)
     return render(request, "article_list.html", {"articles": articles})
 
-@login_required
+@admin_required
 def admin_panel(request):
     return render(request, "admin_panel.html")
+
+@admin_required
+def user_list(request):
+    """List all users with their roles"""
+    users = User.objects.select_related('profile').filter(is_superuser=False).order_by('date_joined')
+    return render(request, "user_management/user_list.html", {"users": users})
+
+@admin_required
+def user_create(request):
+    """Create a new user"""
+    if request.method == "POST":
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password1 = request.POST.get('password1', '')
+        password2 = request.POST.get('password2', '')
+        role = request.POST.get('role', 'user')
+        
+        # Validation
+        if not all([username, email, password1, password2]):
+            messages.error(request, 'All fields are required!')
+            return render(request, 'user_management/user_create.html')
+        
+        if len(username) < 3:
+            messages.error(request, 'Username must be at least 3 characters long.')
+            return render(request, 'user_management/user_create.html')
+        
+        if not username.isalnum():
+            messages.error(request, 'Username must contain only letters and numbers.')
+            return render(request, 'user_management/user_create.html')
+        
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already exists.')
+            return render(request, 'user_management/user_create.html')
+        
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'Email already exists.')
+            return render(request, 'user_management/user_create.html')
+        
+        if password1 != password2:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'user_management/user_create.html')
+
+        if len(password1) < 8:
+            messages.error(request, 'Password must be at least 8 characters long.')
+            return render(request, 'user_management/user_create.html')
+
+        if role not in ['user', 'admin']:
+            messages.error(request, 'Invalid role selected.')
+            return render(request, 'user_management/user_create.html')
+
+        try:
+            user = User.objects.create_user(username=username, email=email, password=password1)
+            # Update the profile role
+            user.profile.role = role
+            user.profile.save()
+            
+            messages.success(request, f'User {user.username} created successfully with {role} role!')
+            return redirect('user_list')
+        except Exception as e:
+            messages.error(request, f'Error creating user: {str(e)}')
+
+    return render(request, 'user_management/user_create.html')
+
+@admin_required
+def user_edit(request, user_id):
+    """Edit user information and role"""
+    
+    if request.method == "POST":
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        role = request.POST.get('role', 'user')
+        is_active = request.POST.get('is_active') == 'on'
+        
+        # Validation
+        if not all([username, email]):
+            messages.error(request, 'Username and email are required!')
+            return render(request, 'user_management/user_edit.html', {"user_obj": user})
+        
+        if len(username) < 3:
+            messages.error(request, 'Username must be at least 3 characters long.')
+            return render(request, 'user_management/user_edit.html', {"user_obj": user})
+        
+        if not username.isalnum():
+            messages.error(request, 'Username must contain only letters and numbers.')
+            return render(request, 'user_management/user_edit.html', {"user_obj": user})
+
+        if User.objects.filter(username=username).exclude(id=user_id).exists():
+            messages.error(request, 'Username already exists.')
+            return render(request, 'user_management/user_edit.html', {"user_obj": user})
+        
+        if User.objects.filter(email=email).exclude(id=user_id).exists():
+            messages.error(request, 'Email already exists.')
+            return render(request, 'user_management/user_edit.html', {"user_obj": user})
+
+        if role not in ['user', 'admin']:
+            messages.error(request, 'Invalid role selected.')
+            return render(request, 'user_management/user_edit.html', {"user_obj": user})
+
+        try:
+            user.username = username
+            user.email = email
+            user.is_active = is_active
+            user.save()
+            
+            # Update profile role
+            user.profile.role = role
+            user.profile.save()
+            
+            messages.success(request, f'User {user.username} updated successfully!')
+            return redirect('user_list')
+        except Exception as e:
+            messages.error(request, f'Error updating user: {str(e)}')
+
+    return render(request, 'user_management/user_edit.html', {"user_obj": user})
+
+@admin_required
+def user_delete(request, user_id):
+    """Delete a user"""
+    user = get_object_or_404(User, id=user_id)
+    
+    # Prevent deleting superuser
+    if user.is_superuser:
+        messages.error(request, 'Cannot delete superuser accounts.')
+        return redirect('user_list')
+    
+    # Prevent deleting self
+    if user == request.user:
+        messages.error(request, 'Cannot delete your own account.')
+        return redirect('user_list')
+    
+    if request.method == "POST":
+        username = user.username
+        user.delete()
+        messages.success(request, f'User {username} deleted successfully!')
+        return redirect('user_list')
+
+    return render(request, 'user_management/user_delete.html', {"user_obj": user})

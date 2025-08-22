@@ -61,12 +61,16 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav mx-auto">
-                        <li class="nav-item"><a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a></li>
                         {% if user.is_authenticated %}
-                            <li class="nav-item"><a class="nav-link {% if request.path == '/blog-registration' %}active{% endif %}" href="/blog-registration">Blog Registration</a></li>
-                            <li class="nav-item"><a class="nav-link {% if request.path == '/article-creation' %}active{% endif %}" href="/article-creation">Article Creation</a></li>
-                            <li class="nav-item"><a class="nav-link {% if request.path == '/article-list' %}active{% endif %}" href="/article-list">Article List</a></li>
-                            <li class="nav-item"><a class="nav-link {% if request.path == '/admin-panel' %}active{% endif %}" href="/admin-panel">Admin Panel</a></li>
+                             <li class="nav-item"><a class="nav-link {% if request.path == '/home' %}active{% endif %}" href="/home">Home</a></li>
+                            {% if user.profile.is_admin %}
+                                <li class="nav-item"><a class="nav-link {% if request.path == '/blog-registration' %}active{% endif %}" href="/blog-registration">Blog Registration</a></li>
+                                <li class="nav-item"><a class="nav-link {% if request.path == '/article-creation' %}active{% endif %}" href="/article-creation">Article Creation</a></li>
+                                <li class="nav-item"><a class="nav-link {% if request.path == '/article-list' %}active{% endif %}" href="/article-list">Article List</a></li>
+                                <li class="nav-item"><a class="nav-link {% if request.path == '/admin-panel' %}active{% endif %}" href="/admin-panel">Admin Panel</a></li>
+                            {% else %}
+                                <!-- Regular users only see Home -->
+                            {% endif %}
                         {% endif %}
                     </ul>
                     
