@@ -4,10 +4,12 @@
 <div style="border: 1px solid #ccc; border-radius: 6px; padding: 20px;">
     <h4><strong>Article Creation</strong></h4>
     <form method="POST">
+        {% csrf_token %}
         <table>
             <tr>
                 <td style="width: 150px;">Keyword</td>
-                <td><input type="text" name="keyword" placeholder="e.g. AI blog" class="form-control" required></td>
+                <td><input type="text" name="title" placeholder="Article Title" class="form-control" required></td>
+                
             </tr>
             <tr style="height: 15px;"></tr>
             <tr>
@@ -21,32 +23,76 @@
             </tr>
         </table>
         <br>
-        <button type="submit" class="btn btn-primary">Generate Article</button>
-    </form>
-
-    <br><br>
-    <h5><strong>Generated Article Preview</strong></h5>
-    <form method="POST">
-        <textarea name="generated_article" class="form-control" rows="5" readonly>
-(The generated article will be displayed here)
-        </textarea>
-        <br>
-        <table>
+            <button type="submit" class="btn btn-primary">Generate Article</button>
+            <br><br>
             <tr>
-                <td style="width: 100px;">Target Blog</td>
-                <td style="width: 300px;">
-                    <select name="target_blog" class="form-select">
-                        {% for blog in blogs %}
-                        <option value="{{ blog.name }}">{{ blog.name }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-                <td>
-                    <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Post</button>
-                </td>
+                <td>Generate Article Preview</td>
+                <td><textarea name="content" placeholder="Write your article content here..." class="form-control" rows="10" required></textarea></td>
             </tr>
+            <table>
+                <tr>
+                    <td>Status</td>
+                    <td>
+                        <select name="status" id="status" class="form-select">
+                            <option value="draft">Draft</option>
+                            <option value="published">Published</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr style="height: 15px;"></tr>
+                <tr>
+                    <td>Target Blog</td>
+                    <td>
+                        <select name="blog" id="blog" class="form-select">
+                            <option value="">Select a blog</option>
+                            {% for blog in form.fields.blog.queryset %}
+                                <option value="{{ blog.id }}">{{ blog.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Post</button>
+                    </td>
+                </tr>
+            </table>
+
+
+
+
+
+
+            <!-- <tr style="height: 15px;"></tr> -->
+               <!-- Status -->
+        <!-- <div class="row mb-3">
+            <label for="status" class="col-sm-2 col-form-label">Status</label>
+            <div class="col-sm-10">
+                <select name="status" id="status" class="form-select" style="width: auto; max-width: 200px;">
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="archived">Archived</option>
+                </select>
+            </div>
+        </div> -->
+
+        <!-- Target Blog -->
+        <!-- <div class="row mb-3">
+            <label for="blog" class="col-sm-2 col-form-label">Target Blog</label>
+            <div class="col-sm-10">
+                <select name="blog" id="blog" class="form-select" style="width: auto; max-width: 200px;" required>
+                    <option value="">Select a blog</option>
+                    {% for blog in form.fields.blog.queryset %}
+                        <option value="{{ blog.id }}">{{ blog.name }}</option>
+                    {% endfor %}
+                </select>
+                
+            </div>
+        </div>
         </table>
+        <br>
+        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Post</button>
     </form>
-</div>
+</div> -->
 
 {% endblock %}
+    

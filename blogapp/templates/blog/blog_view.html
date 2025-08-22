@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+    <a href="{% url 'blog_registration' %}" class="btn btn-secondary text-white" style="text-decoration: none;">
+        <i class="bi bi-arrow-left-circle"></i>
+    </a><br><br>
+
+	{% if blogs %}
+		<ul>
+		{% for blog in blogs %}
+			<li>
+				<h2><strong>{{ blog.name }}</strong></h2><br>
+				URL: <a href="{{ blog.url }}">{{ blog.url }}</a><br>
+				Username: {{ blog.username }}<br>
+				Categories: {{ blog.category|join:', ' }}
+			</li>
+		{% endfor %}
+		</ul>
+	{% else %}
+		<p>No blogs available.</p>
+	{% endif %}
+
+	<h2>Articles</h2>
+	{% if articles %}
+		<ul>
+		{% for article in articles %}
+			<li>
+				<strong>{{ article.title }}</strong> ({{ article.created_at|date:"M d, Y" }}) - {{ article.status }}
+			</li>
+		{% endfor %}
+		</ul>
+	{% else %}
+		<p>No articles available.</p>
+	{% endif %}
+{% endblock %}

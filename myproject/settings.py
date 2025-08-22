@@ -25,11 +25,14 @@ SECRET_KEY = 'django-insecure-&@)1a_r5qv@e+7kl_mfcw+bi!_q!7+jb6dtbu@hkvi66wz!@c2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+
+# Login redirect URL
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/login/'
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

@@ -1,8 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
+<style>
+    a {
+        color: white;
+        text-decoration: none;
+    }
+</style>
 <h4>Admin Panel</h4>
 <ul>
-    <li>User Management</li>
+    <button class="btn btn-sm btn-primary "><a href="{% url 'user_list' %}">User Management</a></li></button>
     <li>API Key Management</li>
     <li>Log Viewing</li>
     <li>Settings (Article Templates, etc.)</li>
