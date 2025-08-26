@@ -4,26 +4,7 @@
 <form method="POST">
     {% csrf_token %}
     <table>
-        <tr>
-            <td>Blog Name</td>
-            <td><input name="name" placeholder="My Blog" required></td>
-        </tr>
-        <tr>
-            <td>WordPress URL</td>
-            <td><input name="url" placeholder="https://example.com" required></td>
-        </tr>
-        <tr>
-            <td>Username</td>
-            <td><input name="username" placeholder="Username" required></td>
-        </tr>
-        <tr>
-            <td>API Key</td>
-            <td><input type="password" name="apikey" placeholder="API Key" required></td>
-        </tr>
-        <tr>
-            <td>Category</td>
-            <td><input name="category" placeholder="Category1, Category2"></td>
-        </tr>
+        {{ form.as_table }}
     </table>
     <br>
     <button type="button" class="btn btn-primary">Check Connection</button>
