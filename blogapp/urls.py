@@ -21,4 +21,5 @@ urlpatterns = [
     path("user-create/", views.user_create, name="user_create"),
     path("user-edit/<int:user_id>/", views.user_edit, name="user_edit"),
     path("user-delete/<int:user_id>/", views.user_delete, name="user_delete"),
+    path("generate-article/", views.handle_ai_generation, name="generate_article"),
 ]

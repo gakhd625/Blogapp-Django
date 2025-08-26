@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.utils import timezone
+import json
 
 # blogs = [
 #     {"name": "Rakurin's Blog", "url": "https://rakurin.net/blog/", "username": "ra781228", "apikey": "********", "category": ["HELLOW WORLD"]},
@@ -16,6 +17,7 @@ from django.utils import timezone
 #     {"title": "SEO-Friendly Article Structure", "date": "2024-06-01 09:30", "status": "Draft"}
 # ]
 from .models import Blog, Article, UserProfile
+from .services import GeminiService
 from functools import wraps
 
 def admin_required(view_func):
@@ -263,6 +265,8 @@ def blog_delete(request, blog_id):
 @admin_required
 def article_creation(request):
     if request.method == "POST":
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return handle_ai_generation(request)
         title = request.POST.get("title", "").strip()
         content = request.POST.get("content", "").strip()
         status = request.POST.get("status", "draft")
@@ -271,29 +275,41 @@ def article_creation(request):
         # Validation
         if not all([title, content, blog_id]):
             messages.error(request, "Title, content, and blog are required!")
-            return render(request, "article_creation.html", {"form": None})
+            blogs = Blog.objects.filter(user=request.user)
+            form = {"fields": {"blog": {"queryset": blogs}}}
+            return render(request, "article_creation.html", {"form": form})
         
         if len(title) < 5:
             messages.error(request, "Title must be at least 5 characters long.")
-            return render(request, "article_creation.html", {"form": None})
+            blogs = Blog.objects.filter(user=request.user)
+            form = {"fields": {"blog": {"queryset": blogs}}}
+            return render(request, "article_creation.html", {"form": form})
         
         if not title.replace(' ', '').replace('-', '').replace('_', '').isalnum():
             messages.error(request, "Title can only contain letters, numbers, spaces, hyphens, and underscores.")
-            return render(request, "article_creation.html", {"form": None})
+            blogs = Blog.objects.filter(user=request.user)
+            form = {"fields": {"blog": {"queryset": blogs}}}
+            return render(request, "article_creation.html", {"form": form})
         
         if len(content) < 50:
             messages.error(request, "Content must be at least 50 characters long.")
-            return render(request, "article_creation.html", {"form": None})
+            blogs = Blog.objects.filter(user=request.user)
+            form = {"fields": {"blog": {"queryset": blogs}}}
+            return render(request, "article_creation.html", {"form": form})
         
         if len(content.split()) < 10:
             messages.error(request, "Content must contain at least 10 words.")
-            return render(request, "article_creation.html", {"form": None})
+            blogs = Blog.objects.filter(user=request.user)
+            form = {"fields": {"blog": {"queryset": blogs}}}
+            return render(request, "article_creation.html", {"form": form})
         
         try:
             blog = Blog.objects.get(id=blog_id, user=request.user)
         except Blog.DoesNotExist:
             messages.error(request, "Invalid blog selected.")
-            return render(request, "article_creation.html", {"form": None})
+            blogs = Blog.objects.filter(user=request.user)
+            form = {"fields": {"blog": {"queryset": blogs}}}
+            return render(request, "article_creation.html", {"form": form})
         
         try:
             article = Article.objects.create(
@@ -308,10 +324,47 @@ def article_creation(request):
         except Exception as e:
             messages.error(request, f'Error creating article: {str(e)}')
     
-    # Create a simple form context for the template
+    # GET request - show the form
     blogs = Blog.objects.filter(user=request.user)
     form = {"fields": {"blog": {"queryset": blogs}}}
     return render(request, "article_creation.html", {"form": form})
+
+@admin_required
+def handle_ai_generation(request):
+    """Handle AJAX request for AI article generation using Gemini"""
+    try:
+        data = json.loads(request.body)
+        keyword = data.get('keyword', '').strip()
+        blog_id = data.get('blog_id', '')
+        
+        if not keyword:
+            return JsonResponse({
+                'success': False,
+                'error': 'Keyword is required for article generation.'
+            })
+        
+        blog_categories = []
+        if blog_id:
+            try:
+                blog = Blog.objects.get(id=blog_id, user=request.user)
+                blog_categories = blog.category if blog.category else []
+            except Blog.DoesNotExist:
+                pass
+        gemini_service = GeminiService()
+        result = gemini_service.generate_article(keyword, blog_categories)
+        
+        return JsonResponse(result)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid request format.'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'An error occurred: {str(e)}'
+        })
 
 @admin_required
 def article_edit(request, article_id):
@@ -453,6 +506,7 @@ def user_create(request):
 @admin_required
 def user_edit(request, user_id):
     """Edit user information and role"""
+    user = get_object_or_404(User, id=user_id)
     
     if request.method == "POST":
         username = request.POST.get('username', '').strip()
