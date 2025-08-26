@@ -10,27 +10,31 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-&@)1a_r5qv@e+7kl_mfcw+bi!_q!7+jb6dtbu@hkvi66wz!@c2'
+SECRET_KEY =os.getenv('SECRET_KEY', 'django-insecure-fallback-key-change-this-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes', 'on')
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost')
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()]
 
 # Login redirect URL
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
-
 
 # Application definition
 INSTALLED_APPS = [
@@ -83,7 +87,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -101,7 +104,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
