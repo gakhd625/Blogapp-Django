@@ -70,6 +70,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const generateBtn = document.getElementById('generate-btn');
+    const keywordInput = document.getElementById('keyword-input');
     const blogSelectAI = document.getElementById('blog-select-ai');
     const titleInput = document.getElementById('title-input');
     const contentTextarea = document.getElementById('content-textarea');
@@ -79,12 +80,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingText = document.getElementById('loading-text');
 
     generateBtn.addEventListener('click', function() {
+        const keyword = keywordInput.value.trim();
+        
+        if (!keyword) {
+            showAIMessage('Please enter a keyword for article generation.', 'error');
+            return;
+        }
 
         generateBtn.disabled = true;
         generateText.style.display = 'none';
         loadingText.style.display = 'inline';
         clearAIMessages();
         const requestData = {
+            keyword: keyword,
             blog_id: blogSelectAI.value
         };
         fetch('{% url "generate_article" %}', {
@@ -122,14 +130,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    keywordInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            generateBtn.click();
+        }
+    });
+
     function showAIMessage(message, type) {
         clearAIMessages();
         const messageDiv = document.createElement('div');
         messageDiv.className = type === 'success' ? 'alert alert-success' : 'alert alert-danger';
+        messageDiv.style.padding = '8px 12px';
+        messageDiv.style.marginTop = '10px';
+        messageDiv.style.borderRadius = '4px';
         messageDiv.textContent = message;
         aiMessages.appendChild(messageDiv);
         if (type === 'success') {
-            setTimeout(() => { messageDiv.remove(); }, 5000);
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
         }
     }
 
