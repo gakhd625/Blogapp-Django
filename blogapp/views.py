@@ -304,8 +304,15 @@ def handle_ai_generation(request):
     """Handle AJAX request for AI article generation using Gemini"""
     try:
         data = json.loads(request.body)
+        keyword = data.get('keyword', '').strip()
         blog_id = data.get('blog_id', '')
-
+        
+        if not keyword:
+            return JsonResponse({
+                'success': False,
+                'error': 'Keyword is required for article generation.'
+            })
+        
         blog_categories = []
         if blog_id:
             try:
@@ -314,8 +321,10 @@ def handle_ai_generation(request):
             except Blog.DoesNotExist:
                 pass
         gemini_service = GeminiService()
-        result = gemini_service.generate_article()
+        result = gemini_service.generate_article(keyword, blog_categories)
+        
         return JsonResponse(result)
+        
     except json.JSONDecodeError:
         return JsonResponse({
             'success': False,
