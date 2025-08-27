@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-4">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0" style="text-align: center;">Sign Up</h4>
+    <div class="col-md-5 col-lg-4">
+        <div class="card bg-transparent border border-1 border-light-subtle">
+            <div class="card-header text-white" style="background: linear-gradient(90deg, #1b2559, #2a3676);">
+                <h4 class="mb-0 text-center"><i class="bi bi-person-plus"></i> Create account</h4>
             </div>
             <div class="card-body">
                 <form method="POST">
@@ -12,22 +12,28 @@
                     
                     <div class="mb-3">
                         <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="e.g. alex" required>
                     </div>
                     
                     <div class="mb-3">
                         <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                        <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="you@example.com" required>
                     </div>
                     
                     <div class="mb-3">
                         <label for="password1" class="form-label">Password <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control" id="password1" name="password1" placeholder="Password" required>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password1" name="password1" placeholder="Password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword1"><i class="bi bi-eye"></i></button>
+                        </div>
                     </div>
                     
-                    <div class="mb-3">  
+                    <div class="mb-3">
                         <label for="password2" class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm Password" required>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm Password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword2"><i class="bi bi-eye"></i></button>
+                        </div>
                     </div>
                     
                     <div class="d-grid gap-2">
@@ -43,4 +49,21 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('togglePassword1').addEventListener('click', function () {
+    const input = document.getElementById('password1');
+    const isPassword = input.getAttribute('type') === 'password';
+    input.setAttribute('type', isPassword ? 'text' : 'password');
+    this.querySelector('i').classList.toggle('bi-eye');
+    this.querySelector('i').classList.toggle('bi-eye-slash');
+});
+document.getElementById('togglePassword2').addEventListener('click', function () {
+    const input = document.getElementById('password2');
+    const isPassword = input.getAttribute('type') === 'password';
+    input.setAttribute('type', isPassword ? 'text' : 'password');
+    this.querySelector('i').classList.toggle('bi-eye');
+    this.querySelector('i').classList.toggle('bi-eye-slash');
+});
+</script>
 {% endblock %}

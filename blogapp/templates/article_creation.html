@@ -1,98 +1,161 @@
 {% extends 'base.html' %}
 {% block content %}
-
-<div style="border: 1px solid #ccc; border-radius: 6px; padding: 20px;">
-    <h4><strong>Article Creation</strong></h4>
-    <form method="POST">
-        {% csrf_token %}
-        <table>
-            <tr>
-                <td style="width: 150px;">Keyword</td>
-                <td><input type="text" name="title" placeholder="Article Title" class="form-control" required></td>
-                
-            </tr>
-            <tr style="height: 15px;"></tr>
-            <tr>
-                <td>Search Engine</td>
-                <td>
-                    <select name="search_engine" class="form-select">
-                        <option value="google">Google</option>
-                        <option value="bing">Bing</option>
-                    </select>
-                </td>
-            </tr>
-        </table>
-        <br>
-            <button type="submit" class="btn btn-primary">Generate Article</button>
-            <br><br>
-            <tr>
-                <td>Generate Article Preview</td>
-                <td><textarea name="content" placeholder="Write your article content here..." class="form-control" rows="10" required></textarea></td>
-            </tr>
-            <table>
-                <tr>
-                    <td>Status</td>
-                    <td>
-                        <select name="status" id="status" class="form-select">
-                            <option value="draft">Draft</option>
-                            <option value="published">Published</option>
-                            <option value="archived">Archived</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr style="height: 15px;"></tr>
-                <tr>
-                    <td>Target Blog</td>
-                    <td>
-                        <select name="blog" id="blog" class="form-select">
-                            <option value="">Select a blog</option>
-                            {% for blog in form.fields.blog.queryset %}
-                                <option value="{{ blog.id }}">{{ blog.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td>
-                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Post</button>
-                    </td>
-                </tr>
-            </table>
-
-
-
-
-
-
-            <!-- <tr style="height: 15px;"></tr> -->
-               <!-- Status -->
-        <!-- <div class="row mb-3">
-            <label for="status" class="col-sm-2 col-form-label">Status</label>
-            <div class="col-sm-10">
-                <select name="status" id="status" class="form-select" style="width: auto; max-width: 200px;">
-                    <option value="draft">Draft</option>
-                    <option value="published">Published</option>
-                    <option value="archived">Archived</option>
-                </select>
-            </div>
-        </div> -->
-
-        <!-- Target Blog -->
-        <!-- <div class="row mb-3">
-            <label for="blog" class="col-sm-2 col-form-label">Target Blog</label>
-            <div class="col-sm-10">
-                <select name="blog" id="blog" class="form-select" style="width: auto; max-width: 200px;" required>
-                    <option value="">Select a blog</option>
-                    {% for blog in form.fields.blog.queryset %}
-                        <option value="{{ blog.id }}">{{ blog.name }}</option>
-                    {% endfor %}
-                </select>
-                
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0 d-flex align-items-center gap-2"><i class="bi bi-magic"></i> Article Creation</h4>
+            <a href="/article-list" class="btn btn-outline-light btn-sm"><i class="bi bi-card-list"></i> List</a>
+        </div>
+        <div class="card bg-transparent border border-1 border-light-subtle">
+            <div class="card-body">
+                <div class="p-3 rounded-3 mb-3" style="background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-6">
+                            <label class="form-label">Keyword</label>
+                            <input type="text" id="keyword-input" placeholder="Enter keyword/topic for article generation" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Search Engine</label>
+                            <select id="search_engine" class="form-select">
+                                <option value="google">Google</option>
+                                <option value="bing">Bing</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" id="generate-btn" class="btn btn-primary w-100">
+                                <span id="generate-text">Generate Article</span>
+                                <span id="loading-text" style="display: none;">Generating...</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="ai-messages" class="mt-2"></div>
+                </div>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" id="title-input" name="title" placeholder="Article Title" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Generated Article Preview</label>
+                        <textarea id="content-textarea" name="content" placeholder="Write your article content here or generate using AI..." class="form-control" rows="12" required></textarea>
+                    </div>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="draft">Draft</option>
+                                <option value="published">Published</option>
+                                <option value="archived">Archived</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Target Blog</label>
+                            <select id="blog-select-ai" name="blog" class="form-select">
+                                <option value="">Select a blog (optional)</option>
+                                {% for blog in form.fields.blog.queryset %}
+                                    <option value="{{ blog.id }}">{{ blog.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-grid">
+                            <button type="submit" class="btn btn-primary">Post</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
-        </table>
-        <br>
-        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Post</button>
-    </form>
-</div> -->
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const generateBtn = document.getElementById('generate-btn');
+    const keywordInput = document.getElementById('keyword-input');
+    const blogSelectAI = document.getElementById('blog-select-ai');
+    const titleInput = document.getElementById('title-input');
+    const contentTextarea = document.getElementById('content-textarea');
+    const blogSelect = document.getElementById('blog');
+    const aiMessages = document.getElementById('ai-messages');
+    const generateText = document.getElementById('generate-text');
+    const loadingText = document.getElementById('loading-text');
 
+    generateBtn.addEventListener('click', function() {
+        const keyword = keywordInput.value.trim();
+        
+        if (!keyword) {
+            showAIMessage('Please enter a keyword for article generation.', 'error');
+            return;
+        }
+
+        generateBtn.disabled = true;
+        generateText.style.display = 'none';
+        loadingText.style.display = 'inline';
+        clearAIMessages();
+        const requestData = {
+            keyword: keyword,
+            blog_id: blogSelectAI.value
+        };
+        fetch('{% url "generate_article" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                titleInput.value = data.title;
+                contentTextarea.value = data.content;
+                if (blogSelectAI.value) {
+                    blogSelect.value = blogSelectAI.value;
+                }
+                
+                showAIMessage('Article generated successfully! Review and edit as needed.', 'success');
+                contentTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                showAIMessage('Error: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAIMessage('An unexpected error occurred. Please try again.', 'error');
+        })
+        .finally(() => {
+            generateBtn.disabled = false;
+            generateText.style.display = 'inline';
+            loadingText.style.display = 'none';
+        });
+    });
+
+    keywordInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            generateBtn.click();
+        }
+    });
+
+    function showAIMessage(message, type) {
+        clearAIMessages();
+        const messageDiv = document.createElement('div');
+        messageDiv.className = type === 'success' ? 'alert alert-success' : 'alert alert-danger';
+        messageDiv.style.padding = '8px 12px';
+        messageDiv.style.marginTop = '10px';
+        messageDiv.style.borderRadius = '4px';
+        messageDiv.textContent = message;
+        aiMessages.appendChild(messageDiv);
+        if (type === 'success') {
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+    }
+
+    function clearAIMessages() {
+        aiMessages.innerHTML = '';
+    }
+});
+</script>
 {% endblock %}
-    

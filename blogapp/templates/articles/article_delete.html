@@ -1,9 +1,22 @@
 {% extends 'base.html' %}
 {% block content %}
-<h4>Delete Article</h4>
-<form method="POST">
-    {% csrf_token %}
-    <p>Are you sure you want to delete the article "{{ article.title }}"?</p>
-    <button type="submit" class="btn btn-danger">Delete</button>
-</form>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card bg-transparent border border-1 border-light-subtle">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirm deletion</h5>
+            </div>
+            <div class="card-body">
+                <p>Are you sure you want to delete the article "<strong>{{ article.title }}</strong>"?</p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="/article-list" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

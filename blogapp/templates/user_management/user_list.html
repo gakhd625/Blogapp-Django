@@ -1,83 +1,77 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>User Management</h2>
-                <a href="{% url 'user_create' %}" class="btn btn-success">
-                    <i class="bi bi-plus-circle"></i> Create New User
-                </a>
-            </div>
-            
-            {% if users %}
-                <div class="card">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Username</th>
-                                        <th>Email</th>
-                                        <th>Role</th>
-                                        <th>Status</th>
-                                        <th>Date Joined</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for user in users %}
-                                    <tr>
-                                        <td>
-                                            <strong>{{ user.username }}</strong>
-                                            {% if user.is_superuser %}
-                                                <span class="badge bg-danger ms-2">Superuser</span>
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0 d-flex align-items-center gap-2"><i class="bi bi-people"></i> User Management</h4>
+            <a href="{% url 'user_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Create New User
+            </a>
+        </div>
+        
+        {% if users %}
+            <div class="card bg-transparent border border-1 border-light-subtle">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Date Joined</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ user.username }}</strong>
+                                        {% if user.is_superuser %}
+                                            <span class="badge bg-danger ms-2">Superuser</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        <span class="badge {% if user.profile.is_admin %}bg-primary{% else %}bg-secondary{% endif %}">
+                                            {{ user.profile.get_role_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if user.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                                    <td class="text-end">
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'user_edit' user.id %}" class="btn btn-sm btn-outline-light"><i class="bi bi-pencil"></i></a>
+                                            {% if not user.is_superuser %}
+                                                <a href="{% url 'user_delete' user.id %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
                                             {% endif %}
-                                        </td>
-                                        <td>{{ user.email }}</td>
-                                        <td>
-                                            <span class="badge {% if user.profile.is_admin %}bg-primary{% else %}bg-secondary{% endif %}">
-                                                {{ user.profile.get_role_display }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% if user.is_active %}
-                                                <span class="badge bg-success">Active</span>
-                                            {% else %}
-                                                <span class="badge bg-danger">Inactive</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ user.date_joined|date:"M d, Y" }}</td>
-                                        <td>
-                                            <div class="btn-group" role="group">
-                                                <a href="{% url 'user_edit' user.id %}" class="btn btn-sm btn-outline-primary">
-                                                    <i class="bi bi-pencil"></i> Edit
-                                                </a>
-                                                {% if not user.is_superuser %}
-                                                    <a href="{% url 'user_delete' user.id %}" class="btn btn-sm btn-outline-danger">
-                                                        <i class="bi bi-trash"></i> Delete
-                                                    </a>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            {% else %}
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> No users found.
-                </div>
-            {% endif %}
-            
-            <div class="mt-3">
-                <a href="{% url 'admin_panel' %}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to Admin Panel
-                </a>
             </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No users found.
+            </div>
+        {% endif %}
+        
+        <div class="mt-3">
+            <a href="{% url 'admin_panel' %}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left"></i> Back to Admin Panel
+            </a>
         </div>
     </div>
 </div>

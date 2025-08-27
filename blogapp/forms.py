@@ -59,7 +59,7 @@ class BlogForm(forms.Form):
         max_length=200,
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Category1, Category2'}),
-        help_text='Enter categories separated by commas'
+        # help_text='Enter categories separated by commas'
     )
     
     # def clean_name(self):
