@@ -1,6 +1,46 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Welcome to the Landing Page</h1>
-    <p>This is the landing page of our blog application.</p>
+    <section class="py-5 py-md-5">
+        <div class="container">
+            <div class="row align-items-center gy-4">
+                <div class="col-lg-7">
+                    <h1 class="display-5 fw-bold" style="letter-spacing: 0.3px;">
+                        Your modern blogging hub
+                    </h1>
+                    <p class="lead text-secondary" style="color:#b8c0d9 !important;">
+                        Create, curate, and share articles with a clean, distraction-free interface.
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap mt-3">
+                        {% if user.is_authenticated %}
+                            <a href="/article-creation" class="btn btn-primary btn-lg"><i class="bi bi-plus-circle"></i> New Article</a>
+                            <a href="/article-list" class="btn btn-outline-light btn-lg"><i class="bi bi-card-list"></i> View Articles</a>
+                        {% else %}
+                            <a href="{% url 'register' %}" class="btn btn-primary btn-lg"><i class="bi bi-person-plus"></i> Get Started</a>
+                            <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="p-4 p-md-5 rounded-4" style="background: radial-gradient(1000px 400px at -10% -20%, rgba(124,199,255,0.2), transparent), radial-gradient(800px 300px at 120% 120%, rgba(167,139,250,0.18), transparent); border:1px solid rgba(255,255,255,0.08);">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-journal-text fs-1 text-primary"></i>
+                            <div>
+                                <div class="fw-semibold">Fast publishing</div>
+                                <div class="text-secondary" style="color:#9aa3bc !important;">Post in seconds with streamlined forms.</div>
+                            </div>
+                        </div>
+                        <hr class="border-secondary"/>
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-magic fs-1" style="color:#a78bfa;"></i>
+                            <div>
+                                <div class="fw-semibold">Clean design</div>
+                                <div class="text-secondary" style="color:#9aa3bc !important;">A sleek dark UI that stays out of your way.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 {% endblock %}

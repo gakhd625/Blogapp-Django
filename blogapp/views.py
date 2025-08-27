@@ -260,11 +260,6 @@ def article_creation(request):
             form = {"fields": {"blog": {"queryset": blogs}}}
             return render(request, "article_creation.html", {"form": form})
         
-        if not title.replace(' ', '').replace('-', '').replace('_', '').isalnum():
-            messages.error(request, "Title can only contain letters, numbers, spaces, hyphens, and underscores.")
-            blogs = Blog.objects.filter(user=request.user)
-            form = {"fields": {"blog": {"queryset": blogs}}}
-            return render(request, "article_creation.html", {"form": form})
         
         if len(content) < 50:
             messages.error(request, "Content must be at least 50 characters long.")
@@ -349,10 +344,6 @@ def article_edit(request, article_id):
         
         if len(title) < 5:
             messages.error(request, "Title must be at least 5 characters long.")
-            return render(request, "articles/article_edit.html", {"article": article, "form": None})
-        
-        if not title.replace(' ', '').replace('-', '').replace('_', '').isalnum():
-            messages.error(request, "Title can only contain letters, numbers, spaces, hyphens, and underscores.")
             return render(request, "articles/article_edit.html", {"article": article, "form": None})
         
         if len(content) < 50:

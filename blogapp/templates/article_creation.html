@@ -1,78 +1,71 @@
 {% extends 'base.html' %}
 {% block content %}
-
-<div style="border: 1px solid #ccc; border-radius: 6px; padding: 20px;">
-    <h4><strong>Article Creation</strong></h4>
-
-    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-        <h5>Article Creation</h5>
-        <table>
-            <tr>
-                <td style="width: 150px;">Keyword</td>
-                <td>
-                    <input type="text" id="keyword-input" placeholder="Enter keyword/topic for article generation" class="form-control">
-                </td>
-            </tr>
-            <tr style="height: 15px;"></tr>
-            <tr>
-                <td>Search Engine</td>
-                <td>
-                    <select id="search_engine" class="form-select">
-                        <option value="google">Google</option>
-                        <option value="bing">Bing</option>
-                    </select>
-                </td>
-            </tr>
-        </table>
-        <div id="ai-messages" style="margin-top: 10px;"></div>
-            <button type="button" id="generate-btn" class="btn btn-primary">
-                <span id="generate-text">Generate Article</span>
-                <span id="loading-text" style="display: none;">Generating...</span>
-            </button>
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0 d-flex align-items-center gap-2"><i class="bi bi-magic"></i> Article Creation</h4>
+            <a href="/article-list" class="btn btn-outline-light btn-sm"><i class="bi bi-card-list"></i> List</a>
+        </div>
+        <div class="card bg-transparent border border-1 border-light-subtle">
+            <div class="card-body">
+                <div class="p-3 rounded-3 mb-3" style="background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-6">
+                            <label class="form-label">Keyword</label>
+                            <input type="text" id="keyword-input" placeholder="Enter keyword/topic for article generation" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Search Engine</label>
+                            <select id="search_engine" class="form-select">
+                                <option value="google">Google</option>
+                                <option value="bing">Bing</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" id="generate-btn" class="btn btn-primary w-100">
+                                <span id="generate-text">Generate Article</span>
+                                <span id="loading-text" style="display: none;">Generating...</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="ai-messages" class="mt-2"></div>
+                </div>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" id="title-input" name="title" placeholder="Article Title" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Generated Article Preview</label>
+                        <textarea id="content-textarea" name="content" placeholder="Write your article content here or generate using AI..." class="form-control" rows="12" required></textarea>
+                    </div>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="draft">Draft</option>
+                                <option value="published">Published</option>
+                                <option value="archived">Archived</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Target Blog</label>
+                            <select id="blog-select-ai" name="blog" class="form-select">
+                                <option value="">Select a blog (optional)</option>
+                                {% for blog in form.fields.blog.queryset %}
+                                    <option value="{{ blog.id }}">{{ blog.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-grid">
+                            <button type="submit" class="btn btn-primary">Post</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <form method="POST">
-        {% csrf_token %}
-            <tr>
-                <td style="width: 150px;">Title</td>
-                <td>
-                    <input type="text" id="title-input" name="title" placeholder="Article Title" class="form-control" required>
-                </td>
-            </tr>
-            <tr style="height: 15px;"></tr>
-            <tr>
-                <td ><h4><strong>Generated Article Preview</strong></td>
-                <td>
-                    <textarea id="content-textarea" name="content" placeholder="Write your article content here or generate using AI..." class="form-control" rows="10" required></textarea>
-                </td>
-            </tr>
-            <table>
-                <tr>
-                    <td>Status</td>
-                    <td>
-                        <select name="status" id="status" class="form-select">
-                            <option value="draft">Draft</option>
-                            <option value="published">Published</option>
-                            <option value="archived">Archived</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr style="height: 15px;"></tr>
-                <tr>
-                    <td>Target Blog</td>
-                    <td>
-                        <select id="blog-select-ai" class="form-select">
-                            <option value="">Select a blog (optional)</option>
-                            {% for blog in form.fields.blog.queryset %}
-                                <option value="{{ blog.id }}">{{ blog.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td>
-                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Post</button>
-                    </td>
-                </tr>
-            </table>
-    </form>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -133,15 +126,10 @@ document.addEventListener('DOMContentLoaded', function() {
         clearAIMessages();
         const messageDiv = document.createElement('div');
         messageDiv.className = type === 'success' ? 'alert alert-success' : 'alert alert-danger';
-        messageDiv.style.padding = '8px 12px';
-        messageDiv.style.marginTop = '10px';
-        messageDiv.style.borderRadius = '4px';
         messageDiv.textContent = message;
         aiMessages.appendChild(messageDiv);
         if (type === 'success') {
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 5000);
+            setTimeout(() => { messageDiv.remove(); }, 5000);
         }
     }
 

@@ -1,34 +1,60 @@
 {% extends 'base.html' %}
 {% block content %}
-    <a href="{% url 'blog_registration' %}" class="btn btn-secondary text-white" style="text-decoration: none;">
-        <i class="bi bi-arrow-left-circle"></i>
-    </a><br><br>
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <a href="{% url 'blog_registration' %}" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
 
 	{% if blogs %}
-		<ul>
-		{% for blog in blogs %}
-			<li>
-				<h2><strong>{{ blog.name }}</strong></h2><br>
-				URL: <a href="{{ blog.url }}">{{ blog.url }}</a><br>
-				Username: {{ blog.username }}<br>
-				Categories: {{ blog.category|join:', ' }}
-			</li>
-		{% endfor %}
-		</ul>
+        <div class="row g-3 mb-4">
+        {% for blog in blogs %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 bg-transparent border border-1 border-light-subtle">
+                    <div class="card-body">
+                        <h5 class="card-title d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-journal-richtext text-primary"></i>
+                            <strong>{{ blog.name }}</strong>
+                        </h5>
+                        <div class="small text-secondary mb-2">@{{ blog.username }}</div>
+                        <div class="mb-2">
+                            <a href="{{ blog.url }}" class="text-decoration-none"><i class="bi bi-link-45deg"></i> {{ blog.url }}</a>
+                        </div>
+                        <div>
+                            <span class="small text-secondary">Categories:</span>
+                            <div class="mt-1 d-flex flex-wrap gap-2">
+                                {% for c in blog.category %}
+                                    <span class="badge bg-info text-dark">{{ c }}</span>
+                                {% empty %}
+                                    <span class="text-secondary small">None</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
 	{% else %}
-		<p>No blogs available.</p>
+		<p class="text-secondary">No blogs available.</p>
 	{% endif %}
 
-	<h2>Articles</h2>
+	<h5 class="mt-4 mb-2 d-flex align-items-center gap-2"><i class="bi bi-files"></i> Articles</h5>
 	{% if articles %}
-		<ul>
+        <div class="list-group list-group-flush">
 		{% for article in articles %}
-			<li>
-				<strong>{{ article.title }}</strong> ({{ article.created_at|date:"M d, Y" }}) - {{ article.status }}
-			</li>
+            <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fw-semibold">{{ article.title }}</div>
+                    <div class="small text-secondary">{{ article.created_at|date:"M d, Y" }}</div>
+                </div>
+                {% with s=article.status %}
+                    <span class="badge {% if s == 'Published' or s == 'published' %}bg-success{% elif s == 'Draft' or s == 'draft' %}bg-secondary{% elif s == 'Archived' or s == 'archived' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">{{ article.status }}</span>
+                {% endwith %}
+            </div>
 		{% endfor %}
-		</ul>
+        </div>
 	{% else %}
-		<p>No articles available.</p>
+		<p class="text-secondary">No articles available.</p>
 	{% endif %}
 {% endblock %}
