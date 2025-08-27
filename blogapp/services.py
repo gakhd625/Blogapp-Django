@@ -50,25 +50,37 @@ class GeminiService:
             logger.error(f"Could not list available models: {e}")
         raise Exception("No available Gemini models found. Please check your API key and try again.")
     
-    def generate_article(self):
+    def generate_article(self, keyword, blog_categories=None):
         """
         Generate an article title and content using Gemini API
+        
+        Args:
+            keyword (str): The keyword/topic for the article
+            blog_categories (list): Optional blog categories for context
         
         Returns:
             dict: Contains 'title', 'content', 'success', and 'error' keys
         """
         try:
-            prompt = """
-            Write a professional blog article.
+            categories_context = ""
+            if blog_categories and len(blog_categories) > 0:
+                categories_context = f" The blog focuses on categories like: {', '.join(blog_categories)}."
+            
+            prompt = f"""
+            Write a professional blog article about "{keyword}".{categories_context}
+            
             Requirements:
             1. Create an engaging title
-            2. Write 3-5 well-structured sentences that provide valuable, informative content about any topic of your choice
+            2. Write 3-5 well-structured sentences that provide valuable, informative content about the topic
             3. Make the content professional, engaging, and suitable for a blog audience
+            
             Please format your response exactly like this:
             Title: Your engaging title here
             Content: Your informative content here (3-5 sentences)
+            
             Do not include any additional text, explanations, or formatting.
             """
+   
             response = self.model.generate_content(prompt)
       
             if not response or not response.text:
@@ -76,7 +88,7 @@ class GeminiService:
                     'success': False,
                     'title': '',
                     'content': '',
-                        'error': 'No content was generated. Please try again.'
+                    'error': 'No content was generated. Please try again with a different keyword.'
                 }
             
             generated_text = response.text.strip()
@@ -125,11 +137,11 @@ class GeminiService:
                     else:
                         title = title_line
                     
-                    title = "The Ultimate Guide to Blogging"
+                    content = " ".join(content_lines)
                     if content.lower().startswith("content:"):
                         content = content[8:].strip()
             
-                content = "This comprehensive article explores everything you need to know about blogging, providing valuable insights and practical information for readers interested in this topic."
+            if not title or not content:
                 sentences = generated_text.split('.')
                 if len(sentences) > 1:
                     title = sentences[0].strip()
@@ -139,7 +151,7 @@ class GeminiService:
                     if content and not content.endswith('.'):
                         content += '.'
                 else:
-                    title = f"Complete Guide to Blogging"
+                    title = f"Complete Guide to {keyword}"
                     content = generated_text
             
             title = title.strip().strip('"\'').strip('*').strip()
@@ -149,9 +161,11 @@ class GeminiService:
             if content.lower().startswith('content:'):
                 content = content[8:].strip()
             
-                title = "The Ultimate Guide to Blogging"
+            if not title or len(title) < 5:
+                title = f"The Ultimate Guide to {keyword}"
             
-                content = "This comprehensive article explores everything you need to know about blogging, providing valuable insights and practical information for readers interested in this topic."
+            if not content or len(content) < 20:
+                content = f"This comprehensive article explores everything you need to know about {keyword}, providing valuable insights and practical information for readers interested in this topic."
             
             if content and not content.rstrip().endswith(('.', '!', '?')):
                 content += '.'
