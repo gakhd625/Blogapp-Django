@@ -442,7 +442,7 @@ def admin_panel(request):
 def user_list(request):
     """List all users with their roles"""
     users = User.objects.select_related('profile').filter(is_superuser=False).order_by('date_joined')
-    return render(request, "user_management/user_list.html", {"users": users})
+    return render(request, "admin-panel/user_management/user_list.html", {"users": users})
 
 @admin_required
 def user_create(request):
@@ -457,35 +457,35 @@ def user_create(request):
         # Validation
         if not all([username, email, password1, password2]):
             messages.error(request, 'All fields are required!')
-            return render(request, 'user_management/user_create.html')
+            return render(request, 'admin-panel/user_management/user_create.html')
         
         if len(username) < 3:
             messages.error(request, 'Username must be at least 3 characters long.')
-            return render(request, 'user_management/user_create.html')
+            return render(request, 'admin-panel/user_management/user_create.html')
         
         if not username.isalnum():
             messages.error(request, 'Username must contain only letters and numbers.')
-            return render(request, 'user_management/user_create.html')
-        
+            return render(request, 'admin-panel/user_management/user_create.html')
+
         if User.objects.filter(username=username).exists():
             messages.error(request, 'Username already exists.')
-            return render(request, 'user_management/user_create.html')
-        
+            return render(request, 'admin-panel/user_management/user_create.html')
+
         if User.objects.filter(email=email).exists():
             messages.error(request, 'Email already exists.')
-            return render(request, 'user_management/user_create.html')
-        
+            return render(request, 'admin-panel/user_management/user_create.html')
+
         if password1 != password2:
             messages.error(request, 'Passwords do not match.')
-            return render(request, 'user_management/user_create.html')
+            return render(request, 'admin-panel/user_management/user_create.html')
 
         if len(password1) < 8:
             messages.error(request, 'Password must be at least 8 characters long.')
-            return render(request, 'user_management/user_create.html')
+            return render(request, 'admin-panel/user_management/user_create.html')
 
         if role not in ['user', 'admin']:
             messages.error(request, 'Invalid role selected.')
-            return render(request, 'user_management/user_create.html')
+            return render(request, 'admin-panel/user_management/user_create.html')
 
         try:
             user = User.objects.create_user(username=username, email=email, password=password1)
@@ -497,7 +497,7 @@ def user_create(request):
         except Exception as e:
             messages.error(request, f'Error creating user: {str(e)}')
 
-    return render(request, 'user_management/user_create.html')
+    return render(request, 'admin-panel/user_management/user_create.html')
 
 @admin_required
 def user_edit(request, user_id):
@@ -513,27 +513,27 @@ def user_edit(request, user_id):
         # Validation
         if not all([username, email]):
             messages.error(request, 'Username and email are required!')
-            return render(request, 'user_management/user_edit.html', {"user_obj": user})
-        
+            return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
+
         if len(username) < 3:
             messages.error(request, 'Username must be at least 3 characters long.')
-            return render(request, 'user_management/user_edit.html', {"user_obj": user})
-        
+            return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
+
         if not username.isalnum():
             messages.error(request, 'Username must contain only letters and numbers.')
-            return render(request, 'user_management/user_edit.html', {"user_obj": user})
+            return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
 
         if User.objects.filter(username=username).exclude(id=user_id).exists():
             messages.error(request, 'Username already exists.')
-            return render(request, 'user_management/user_edit.html', {"user_obj": user})
-        
+            return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
+
         if User.objects.filter(email=email).exclude(id=user_id).exists():
             messages.error(request, 'Email already exists.')
-            return render(request, 'user_management/user_edit.html', {"user_obj": user})
+            return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
 
         if role not in ['user', 'admin']:
             messages.error(request, 'Invalid role selected.')
-            return render(request, 'user_management/user_edit.html', {"user_obj": user})
+            return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
 
         try:
             user.username = username
@@ -550,7 +550,7 @@ def user_edit(request, user_id):
         except Exception as e:
             messages.error(request, f'Error updating user: {str(e)}')
 
-    return render(request, 'user_management/user_edit.html', {"user_obj": user})
+    return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
 
 @admin_required
 def user_delete(request, user_id):
@@ -573,4 +573,4 @@ def user_delete(request, user_id):
         messages.success(request, f'User {username} deleted successfully!')
         return redirect('user_list')
 
-    return render(request, 'user_management/user_delete.html', {"user_obj": user})
+    return render(request, 'admin-panel/user_management/user_delete.html', {"user_obj": user})
