@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.utils import timezone
+from .models import Blog, Article
 from .forms import BlogForm
 import json
 
@@ -116,7 +117,8 @@ def user_logout(request):
 def home(request):
     if not request.user.is_authenticated:
         return render(request, "landing.html")
-    return render(request, "home.html")
+    articles = Article.objects.all()
+    return render(request, "home.html", {"articles": articles})
 
 def landing(request):
     return render(request, "landing.html")
@@ -125,42 +127,69 @@ def landing(request):
 def blog_view(request, id):
     blog = Blog.objects.filter(id=id, user=request.user).first()
     articles = Article.objects.filter(blog_id=id, user=request.user)
-    return render(request, "blog/blog_view.html", {"blog": blog, "articles": articles})
+    return render(request, "blogs/blog_view.html", {"blog": blog, "articles": articles})
 
 @admin_required
 @admin_required
 def blog_registration(request):
     if request.method == "POST":
-        form = BlogForm(request.POST)
-        if form.is_valid():
-            name = form.cleaned_data['name']
-            url = form.cleaned_data['url']
-            username = form.cleaned_data['username']
-            apikey = form.cleaned_data['apikey']
-            category_input = form.cleaned_data['category']
+        name = request.POST.get("name", "").strip()
+        url = request.POST.get("url", "").strip()
+        username = request.POST.get("username", "").strip()
+        apikey = request.POST.get("apikey", "").strip()
+        category_input = request.POST.get("category", "").strip()
+        if not all([name, url, username, apikey]):
+            messages.error(request, "All fields are required!")
+            return render(request, "blogs/blog_registration.html", {"blogs": []})
+        
+        if len(name) < 2:
+            messages.error(request, "Blog name must be at least 2 characters long.")
+            return render(request, "blogs/blog_registration.html", {"blogs": []})
 
-            # Handle categories (convert string → list)
-            categories = [cat.strip() for cat in category_input.split(",") if cat.strip()] if category_input else []
+        if not url.startswith(('http://', 'https://', 'www.')):
+            messages.error(request, "URL must start with http:// or https:// or www.")
+            return render(request, "blogs/blog_registration.html", {"blogs": []})
 
-            # Duplicate check
-            if Blog.objects.filter(user=request.user, name=name).exists():
-                messages.error(request, f"Blog with name '{name}' already exists!")
-            else:
-                blog = Blog.objects.create(
-                    user=request.user,
-                    name=name,
-                    url=url,
-                    username=username,
-                    apikey=apikey,
-                    category=categories
-                )
-                messages.success(request, f"Blog '{blog.name}' registered successfully!")
-                return redirect("blog_registration")
-    else:
-        form = BlogForm()
+        if len(username) < 2:
+            messages.error(request, "Username must be at least 2 characters long.")
+            return render(request, "blogs/blog_registration.html", {"blogs": []})
 
+        if len(apikey) < 10:
+            messages.error(request, "API key must be at least 10 characters long.")
+            return render(request, "blogs/blog_registration.html", {"blogs": []})
+
+        # Check if blog name already exists for this user
+        if Blog.objects.filter(user=request.user, name=name).exists():
+            messages.error(request, f"Blog with name '{name}' already exists!")
+            return render(request, "blogs/blog_registration.html", {"blogs": []})
+
+        # Process categories
+        categories = [cat.strip() for cat in category_input.split(",") if cat.strip()] if category_input else []
+        if len(categories) > 10:
+            messages.error(request, "Maximum 10 categories allowed.")
+            return render(request, "blogs/blog_registration.html", {"blogs": []})
+        
+        for cat in categories:
+            if len(cat) > 50:
+                messages.error(request, "Each category must be 50 characters or less.")
+                return render(request, "blogs/blog_registration.html", {"blogs": []})
+        
+        try:
+            blog = Blog.objects.create(
+                user=request.user,
+                name=name,
+                url=url,
+                username=username,
+                apikey=apikey,
+                category=categories
+            )
+            messages.success(request, f"Blog '{blog.name}' registered successfully!")
+            return redirect("blog_registration")
+        except Exception as e:
+            messages.error(request, f'Error creating blog: {str(e)}')
+    
     blogs = Blog.objects.filter(user=request.user)
-    return render(request, "blog_registration.html", {"form": form, "blogs": blogs})
+    return render(request, "blogs/blog_registration.html", {"blogs": blogs})
 
 @admin_required
 def blog_edit(request, blog_id):
@@ -176,40 +205,40 @@ def blog_edit(request, blog_id):
         # Validation
         if not all([name, url, username, apikey]):
             messages.error(request, "All fields are required!")
-            return render(request, "blog/blog_edit.html", {"blog": blog})
+            return render(request, "blogs/blog_edit.html", {"blog": blog})
         
         if len(name) < 2:
             messages.error(request, "Blog name must be at least 2 characters long.")
-            return render(request, "blog/blog_edit.html", {"blog": blog})
+            return render(request, "blogs/blog_edit.html", {"blog": blog})
         
         if not url.startswith(('http://', 'https://')):
             messages.error(request, "URL must start with http:// or https://")
-            return render(request, "blog/blog_edit.html", {"blog": blog})
-        
+            return render(request, "blogs/blog_edit.html", {"blog": blog})
+
         if len(username) < 2:
             messages.error(request, "Username must be at least 2 characters long.")
-            return render(request, "blog/blog_edit.html", {"blog": blog})
-        
+            return render(request, "blogs/blog_edit.html", {"blog": blog})
+
         if len(apikey) < 10:
             messages.error(request, "API key must be at least 10 characters long.")
-            return render(request, "blog/blog_edit.html", {"blog": blog})
-        
+            return render(request, "blogs/blog_edit.html", {"blog": blog})
+
         # Check if new name conflicts with existing blogs (excluding current blog)
         if Blog.objects.filter(user=request.user, name=name).exclude(id=blog_id).exists():
             messages.error(request, f"Blog with name '{name}' already exists!")
-            return render(request, "blog/blog_edit.html", {"blog": blog})
-        
+            return render(request, "blogs/blog_edit.html", {"blog": blog})
+
         # Process categories
         categories = [cat.strip() for cat in category_input.split(",") if cat.strip()] if category_input else []
         if len(categories) > 10:
             messages.error(request, "Maximum 10 categories allowed.")
-            return render(request, "blog/blog_edit.html", {"blog": blog})
-
+            return render(request, "blogs/blog_edit.html", {"blog": blog})
+        
         for cat in categories:
             if len(cat) > 50:
                 messages.error(request, "Each category must be 50 characters or less.")
-                return render(request, "blog/blog_edit.html", {"blog": blog})
-
+                return render(request, "blogs/blog_edit.html", {"blog": blog})
+        
         try:
             blog.name = name
             blog.url = url
@@ -223,7 +252,7 @@ def blog_edit(request, blog_id):
         except Exception as e:
             messages.error(request, f'Error updating blog: {str(e)}')
 
-    return render(request, "blog/blog_edit.html", {"blog": blog})
+    return render(request, "blogs/blog_edit.html", {"blog": blog})
 
 @admin_required
 def blog_delete(request, blog_id):
@@ -234,8 +263,8 @@ def blog_delete(request, blog_id):
         blog.delete()
         messages.success(request, f"Blog '{blog_name}' deleted successfully!")
         return redirect("blog_registration")
-
-    return render(request, "blog/blog_delete.html", {"blog": blog})
+    
+    return render(request, "blogs/blog_delete.html", {"blog": blog})
 
 @admin_required
 def article_creation(request):
@@ -354,7 +383,7 @@ def article_edit(request, article_id):
         if len(title) < 5:
             messages.error(request, "Title must be at least 5 characters long.")
             return render(request, "articles/article_edit.html", {"article": article, "form": None})
-        
+
         if len(content) < 50:
             messages.error(request, "Content must be at least 50 characters long.")
             return render(request, "articles/article_edit.html", {"article": article, "form": None})
@@ -398,10 +427,14 @@ def article_delete(request, article_id):
     
     return render(request, "articles/article_delete.html", {"article": article})
 
+def article_view(request, article_id):
+    article = get_object_or_404(Article, id=article_id)
+    return render(request, "articles/article_view.html", {"article": article})
+
 @admin_required
 def article_list(request):
     articles = Article.objects.filter(user=request.user)
-    return render(request, "article_list.html", {"articles": articles})
+    return render(request, "articles/article_list.html", {"articles": articles})
 
 @admin_required
 def admin_panel(request):
@@ -411,7 +444,7 @@ def admin_panel(request):
 def user_list(request):
     """List all users with their roles"""
     users = User.objects.select_related('profile').filter(is_superuser=False).order_by('date_joined')
-    return render(request, "user_management/user_list.html", {"users": users})
+    return render(request, "admin-panel/user_management/user_list.html", {"users": users})
 
 @admin_required
 def user_create(request):
@@ -426,39 +459,38 @@ def user_create(request):
         # Validation
         if not all([username, email, password1, password2]):
             messages.error(request, 'All fields are required!')
-            return render(request, 'user_management/user_create.html')
+            return render(request, 'admin-panel/user_management/user_create.html')
         
         if len(username) < 3:
             messages.error(request, 'Username must be at least 3 characters long.')
-            return render(request, 'user_management/user_create.html')
+            return render(request, 'admin-panel/user_management/user_create.html')
         
         if not username.isalnum():
             messages.error(request, 'Username must contain only letters and numbers.')
-            return render(request, 'user_management/user_create.html')
-        
+            return render(request, 'admin-panel/user_management/user_create.html')
+
         if User.objects.filter(username=username).exists():
             messages.error(request, 'Username already exists.')
-            return render(request, 'user_management/user_create.html')
-        
+            return render(request, 'admin-panel/user_management/user_create.html')
+
         if User.objects.filter(email=email).exists():
             messages.error(request, 'Email already exists.')
-            return render(request, 'user_management/user_create.html')
-        
+            return render(request, 'admin-panel/user_management/user_create.html')
+
         if password1 != password2:
             messages.error(request, 'Passwords do not match.')
-            return render(request, 'user_management/user_create.html')
+            return render(request, 'admin-panel/user_management/user_create.html')
 
         if len(password1) < 8:
             messages.error(request, 'Password must be at least 8 characters long.')
-            return render(request, 'user_management/user_create.html')
+            return render(request, 'admin-panel/user_management/user_create.html')
 
         if role not in ['user', 'admin']:
             messages.error(request, 'Invalid role selected.')
-            return render(request, 'user_management/user_create.html')
+            return render(request, 'admin-panel/user_management/user_create.html')
 
         try:
             user = User.objects.create_user(username=username, email=email, password=password1)
-            # Update the profile role
             user.profile.role = role
             user.profile.save()
             
@@ -467,7 +499,7 @@ def user_create(request):
         except Exception as e:
             messages.error(request, f'Error creating user: {str(e)}')
 
-    return render(request, 'user_management/user_create.html')
+    return render(request, 'admin-panel/user_management/user_create.html')
 
 @admin_required
 def user_edit(request, user_id):
@@ -483,27 +515,27 @@ def user_edit(request, user_id):
         # Validation
         if not all([username, email]):
             messages.error(request, 'Username and email are required!')
-            return render(request, 'user_management/user_edit.html', {"user_obj": user})
-        
+            return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
+
         if len(username) < 3:
             messages.error(request, 'Username must be at least 3 characters long.')
-            return render(request, 'user_management/user_edit.html', {"user_obj": user})
-        
+            return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
+
         if not username.isalnum():
             messages.error(request, 'Username must contain only letters and numbers.')
-            return render(request, 'user_management/user_edit.html', {"user_obj": user})
+            return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
 
         if User.objects.filter(username=username).exclude(id=user_id).exists():
             messages.error(request, 'Username already exists.')
-            return render(request, 'user_management/user_edit.html', {"user_obj": user})
-        
+            return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
+
         if User.objects.filter(email=email).exclude(id=user_id).exists():
             messages.error(request, 'Email already exists.')
-            return render(request, 'user_management/user_edit.html', {"user_obj": user})
+            return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
 
         if role not in ['user', 'admin']:
             messages.error(request, 'Invalid role selected.')
-            return render(request, 'user_management/user_edit.html', {"user_obj": user})
+            return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
 
         try:
             user.username = username
@@ -520,7 +552,7 @@ def user_edit(request, user_id):
         except Exception as e:
             messages.error(request, f'Error updating user: {str(e)}')
 
-    return render(request, 'user_management/user_edit.html', {"user_obj": user})
+    return render(request, 'admin-panel/user_management/user_edit.html', {"user_obj": user})
 
 @admin_required
 def user_delete(request, user_id):
@@ -543,4 +575,4 @@ def user_delete(request, user_id):
         messages.success(request, f'User {username} deleted successfully!')
         return redirect('user_list')
 
-    return render(request, 'user_management/user_delete.html', {"user_obj": user})
+    return render(request, 'admin-panel/user_management/user_delete.html', {"user_obj": user})

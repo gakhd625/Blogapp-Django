@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="mb-4">
+    <a href="{% url 'home' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+  </div>
+  <h1>{{ article.title }}</h1>
+  <p>Published on: {{ article.created_at|date:"M d, Y" }}</p>
+  <p>Status: {{ article.status }}</p>
+  <div>
+    <h2>Content</h2>
+    <p>{{ article.content }}</p>
+  </div>
+{% endblock %}

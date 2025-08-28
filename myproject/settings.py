@@ -35,7 +35,7 @@ ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.s
 # Login redirect URL
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
-
+STATIC_URL = '/static/'
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',

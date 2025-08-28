@@ -1,9 +1,97 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="row justify-content-center">
-	<div class="col-md-10 text-center">
-		<h1 class="mb-4">Welcome to the Blog Home</h1>
-		<!-- Add more Bootstrap classes to your home page content as needed -->
-	</div>
+<style>
+    body {
+        background: linear-gradient(to right, #f8f9fa, #e9ecef);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .blog-header {
+        padding: 60px 0 30px;
+        background: linear-gradient(to right, #212529, #343a40);
+        color: white;
+        border-radius: 0 0 20px 20px;
+    }
+
+    .blog-header h1 {
+        font-weight: 700;
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .blog-header h4 {
+        font-weight: 300;
+        opacity: 0.9;
+    }
+
+    .article-row {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 25px 30px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+        transition: box-shadow 0.3s ease, transform 0.2s ease;
+    }
+
+    .article-row:hover {
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+        transform: translateY(-3px);
+    }
+
+    .article-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        margin-bottom: 0.4rem;
+        color: #212529;
+    }
+
+    .article-snippet {
+        color: #6c757d;
+        font-size: 0.95rem;
+        max-width: 600px;
+    }
+
+    .btn-read {
+        border: none;
+        color: rgb(0, 0, 0);
+        padding: 10px 18px;
+        font-weight: 500;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    @media (max-width: 767px) {
+        .article-row {
+            flex-direction: column;
+            align-items: flex-start !important;
+            padding: 20px;
+        }
+
+        .btn-read {
+            margin-top: 12px;
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="blog-header text-center">
+    <h1>Welcome to the Blog Home</h1>
+    <h4>Articles that you might like</h4>
+</div>
+
+<div class="container mt-5">
+    {% for article in articles %}
+    <div class="d-flex justify-content-between align-items-center article-row flex-wrap">
+        <div class="me-3">
+            <div class="article-title">{{ article.title }}</div>
+            <div class="article-snippet">{{ article.content|truncatewords:20 }}</div>
+        </div>
+        <a href="{% url 'article_view' article.id %}" class="btn btn-read">
+            Read More →
+        </a>
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}

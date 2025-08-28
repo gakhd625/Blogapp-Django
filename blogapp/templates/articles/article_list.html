@@ -23,9 +23,15 @@
             <td class="fw-semibold">{{ article.title }}</td>
             <td>{{ article.created_at|date:"M d, Y" }}</td>
             <td>
+<<<<<<< HEAD:blogapp/templates/article_list.html
                 {% with s=article.status %}
                     <span class="badge {% if s == 'Published' or s == 'published' %}bg-success{% elif s == 'Draft' or s == 'draft' %}bg-secondary{% elif s == 'Archived' or s == 'archived' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">{{ article.status }}</span>
                 {% endwith %}
+=======
+                <a href="{% url 'article_edit' article.id %}" class="btn btn-sm btn-primary text-white" style="text-decoration: none;">Edit</a>
+                <a href="{% url 'article_delete' article.id %}" class="btn btn-sm btn-danger text-white" style="text-decoration: none;">Delete</a>
+                <a href="{% url 'article_view' article.id %}" class="btn btn-sm btn-secondary text-white" style="text-decoration: none;">View</a>
+>>>>>>> b589e2b59ed7e69f0e5ebb00249240d63b3b0d2b:blogapp/templates/articles/article_list.html
             </td>
             <td class="text-end">
                 <a href="{% url 'article_edit' article.id %}" class="btn btn-sm btn-outline-light"><i class="bi bi-pencil"></i></a>
