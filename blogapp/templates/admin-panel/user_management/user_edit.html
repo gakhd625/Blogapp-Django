@@ -8,7 +8,7 @@
                     <h3 class="card-title mb-0">Edit User: {{ user_obj.username }}</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         
                         <div class="row">
@@ -45,6 +45,57 @@
                                     </label>
                                     <div class="form-text">Uncheck to deactivate this user account.</div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="first_name">First Name</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user_obj.first_name }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="last_name">Last Name</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user_obj.last_name }}">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" for="age">Age</label>
+                                <input type="number" min="0" class="form-control" id="age" name="age" value="{{ user_obj.profile.age }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" for="gender">Gender</label>
+                                <select class="form-select" id="gender" name="gender">
+                                    <option value="" {% if not user_obj.profile.gender %}selected{% endif %}>--</option>
+                                    <option value="male" {% if user_obj.profile.gender == 'male' %}selected{% endif %}>Male</option>
+                                    <option value="female" {% if user_obj.profile.gender == 'female' %}selected{% endif %}>Female</option>
+                                    <option value="other" {% if user_obj.profile.gender == 'other' %}selected{% endif %}>Other</option>
+                                    <option value="prefer_not_say" {% if user_obj.profile.gender == 'prefer_not_say' %}selected{% endif %}>Prefer not to say</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" for="dob">Date of Birth</label>
+                                <input type="date" class="form-control" id="dob" name="dob" value="{{ user_obj.profile.dob|date:'Y-m-d' }}">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="status">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="active" {% if user_obj.profile.status == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="inactive" {% if user_obj.profile.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="picture">Profile Picture</label>
+                                <input type="file" class="form-control" id="picture" name="picture" accept="image/*">
+                                {% if user_obj.profile.picture %}
+                                    <div class="mt-2">
+                                        <img src="{{ user_obj.profile.picture.url }}" alt="Profile Picture" style="width:80px;height:80px;object-fit:cover;border-radius:6px;"/>
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                         

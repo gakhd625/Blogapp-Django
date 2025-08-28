@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.validators import URLValidator, MinLengthValidator
 from django.core.exceptions import ValidationError
+from .models import UserProfile
 
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True, help_text='Required. Enter a valid email address.')
@@ -115,3 +116,38 @@ class ArticleForm(forms.Form):
         if len(content.split()) < 10:
             raise ValidationError('Content must contain at least 10 words.')
         return content.strip()
+
+
+class UserProfileForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=150, required=False)
+    last_name = forms.CharField(max_length=150, required=False)
+    email = forms.EmailField(required=False)
+
+    class Meta:
+        model = UserProfile
+        fields = [
+            'first_name', 'last_name', 'age', 'gender', 'email', 'dob', 'picture'
+        ]
+        widgets = {
+            'dob': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user_instance', None)
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['first_name'].initial = user.first_name
+            self.fields['last_name'].initial = user.last_name
+            self.fields['email'].initial = user.email
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        if hasattr(profile, 'user') and profile.user:
+            profile.user.first_name = self.cleaned_data.get('first_name', profile.user.first_name)
+            profile.user.last_name = self.cleaned_data.get('last_name', profile.user.last_name)
+            profile.user.email = self.cleaned_data.get('email', profile.user.email)
+            if commit:
+                profile.user.save()
+        if commit:
+            profile.save()
+        return profile

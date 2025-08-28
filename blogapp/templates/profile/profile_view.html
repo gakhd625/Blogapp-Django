@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">My Profile</h5>
+          <a class="btn btn-sm btn-primary" href="{% url 'profile_edit' %}">Edit</a>
+        </div>
+        <div class="card-body">
+          <div class="d-flex align-items-start gap-3">
+            {% if profile and profile.picture %}
+              <img src="{{ profile.picture.url }}" class="rounded" style="width:100px;height:100px;object-fit:cover;" alt="Profile Picture"/>
+            {% else %}
+              <i class="bi bi-person-circle" style="font-size: 80px;"></i>
+            {% endif %}
+            <div>
+              <p class="mb-1"><strong>First Name:</strong> {{ request.user.first_name }}</p>
+              <p class="mb-1"><strong>Last Name:</strong> {{ request.user.last_name }}</p>
+              <p class="mb-1"><strong>Email:</strong> {{ request.user.email }}</p>
+              <p class="mb-1"><strong>Age:</strong> {{ profile.age|default:'-' }}</p>
+              <p class="mb-1"><strong>Gender:</strong> {{ profile.get_gender_display|default:'-' }}</p>
+              <p class="mb-1"><strong>Date of Birth:</strong> {{ profile.dob|date:'Y-m-d'|default:'-' }}</p>
+              <p class="mb-1"><strong>Status:</strong> {{ profile.get_status_display|default:'-' }}</p>
+              <p class="mb-1"><strong>Role:</strong> {{ profile.get_role_display|default:'User' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

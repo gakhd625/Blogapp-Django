@@ -75,8 +75,9 @@
                     </ul>
                     
                 
-                    <ul class="navbar-nav">
+                    <ul class="navbar-nav ms-auto">
                         {% if user.is_authenticated %}
+                            <li class="nav-item"><a class="nav-link {% if request.path == '/profile/' %}active{% endif %}" href="{% url 'profile_view' %}"><i class="bi bi-person-circle"></i> Profile</a></li>
                             <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout ({{ user.username }})</a></li>
                         {% else %}
                             <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>

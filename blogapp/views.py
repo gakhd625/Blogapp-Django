@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.utils import timezone
-from .models import Blog, Article
+from .models import Blog, Article, UserProfile
 import json
 
 # blogs = [
@@ -19,6 +19,7 @@ import json
 # ]
 from .models import Blog, Article, UserProfile
 from .services import GeminiService
+from .forms import UserProfileForm
 from functools import wraps
 
 def admin_required(view_func):
@@ -438,6 +439,41 @@ def article_list(request):
 def admin_panel(request):
     return render(request, "admin_panel.html")
 
+@login_required
+def profile_view(request):
+    profile = getattr(request.user, 'profile', None)
+    return render(request, 'profile/profile_view.html', {"profile": profile})
+
+@login_required
+def profile_edit(request):
+    profile = getattr(request.user, 'profile', None)
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=profile, user_instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('profile_view')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = UserProfileForm(instance=profile, user_instance=request.user)
+    return render(request, 'profile/profile_edit.html', {"form": form})
+
+@admin_required
+def admin_profile_edit(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    profile = getattr(user, 'profile', None)
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=profile, user_instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"{user.username}'s profile updated successfully!")
+            return redirect('user_edit', user_id=user.id)
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = UserProfileForm(instance=profile, user_instance=user)
+    return render(request, 'profile/profile_edit.html', {"form": form, "admin_mode": True, "user_obj": user})
 @admin_required
 def user_list(request):
     """List all users with their roles"""
@@ -452,7 +488,13 @@ def user_create(request):
         email = request.POST.get('email', '').strip()
         password1 = request.POST.get('password1', '')
         password2 = request.POST.get('password2', '')
-        role = request.POST.get('role', 'user')
+    # role removed
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        age = request.POST.get('age', '').strip()
+        gender = request.POST.get('gender', '').strip()
+        dob = request.POST.get('dob', '').strip()
+    # status removed
         
         # Validation
         if not all([username, email, password1, password2]):
@@ -483,16 +525,30 @@ def user_create(request):
             messages.error(request, 'Password must be at least 8 characters long.')
             return render(request, 'admin-panel/user_management/user_create.html')
 
-        if role not in ['user', 'admin']:
-            messages.error(request, 'Invalid role selected.')
-            return render(request, 'admin-panel/user_management/user_create.html')
+    # role validation removed
 
         try:
             user = User.objects.create_user(username=username, email=email, password=password1)
-            user.profile.role = role
-            user.profile.save()
-            
-            messages.success(request, f'User {user.username} created successfully with {role} role!')
+            user.first_name = first_name
+            user.last_name = last_name
+            user.save()
+
+            profile = user.profile
+            if age.isdigit():
+                profile.age = int(age)
+            profile.gender = gender or ''
+            if dob:
+                try:
+                    from datetime import datetime
+                    profile.dob = datetime.strptime(dob, '%Y-%m-%d').date()
+                except Exception:
+                    profile.dob = None
+            if request.FILES.get('picture'):
+                profile.picture = request.FILES['picture']
+            profile.email = email
+            profile.save()
+
+            messages.success(request, f'User {user.username} created successfully!')
             return redirect('user_list')
         except Exception as e:
             messages.error(request, f'Error creating user: {str(e)}')
@@ -509,6 +565,12 @@ def user_edit(request, user_id):
         email = request.POST.get('email', '').strip()
         role = request.POST.get('role', 'user')
         is_active = request.POST.get('is_active') == 'on'
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        age = request.POST.get('age', '').strip()
+        gender = request.POST.get('gender', '').strip()
+        dob = request.POST.get('dob', '').strip()
+        status = request.POST.get('status', '').strip()
         
         # Validation
         if not all([username, email]):
@@ -538,13 +600,30 @@ def user_edit(request, user_id):
         try:
             user.username = username
             user.email = email
+            user.first_name = first_name
+            user.last_name = last_name
             user.is_active = is_active
             user.save()
-            
-            # Update profile role
-            user.profile.role = role
-            user.profile.save()
-            
+
+            # Update profile fields
+            profile = user.profile
+            profile.role = role
+            if age.isdigit():
+                profile.age = int(age)
+            profile.gender = gender or ''
+            if status in dict(UserProfile.STATUS_CHOICES):
+                profile.status = status
+            if dob:
+                try:
+                    from datetime import datetime
+                    profile.dob = datetime.strptime(dob, '%Y-%m-%d').date()
+                except Exception:
+                    pass
+            if request.FILES.get('picture'):
+                profile.picture = request.FILES['picture']
+            profile.email = email
+            profile.save()
+
             messages.success(request, f'User {user.username} updated successfully!')
             return redirect('user_list')
         except Exception as e:

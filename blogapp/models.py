@@ -7,9 +7,25 @@ class UserProfile(models.Model):
         ('user', 'User'),
         ('admin', 'Admin'),
     ]
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other'),
+        ('prefer_not_say', 'Prefer not to say'),
+    ]
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+    ]
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
+    age = models.PositiveIntegerField(null=True, blank=True)
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, blank=True)
+    email = models.EmailField(blank=True)  
+    dob = models.DateField(null=True, blank=True)
+    picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -85,7 +101,6 @@ class Article(models.Model):
         word_count = len(self.content.split())
         return max(1, round(word_count / words_per_minute))
 
-# Signal to create UserProfile when User is created
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 

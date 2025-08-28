@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Edit Profile{% if admin_mode %} for {{ user_obj.username }}{% endif %}</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">First Name</label>
+                {{ form.first_name }}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Last Name</label>
+                {{ form.last_name }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Email</label>
+                {{ form.email }}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Age</label>
+                {{ form.age }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Gender</label>
+                {{ form.gender }}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Date of Birth</label>
+                {{ form.dob }}
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Profile Picture</label>
+              {{ form.picture }}
+            </div>
+
+              <!-- Status and Role fields removed -->
+
+            <div class="d-flex justify-content-end gap-2">
+              <a class="btn btn-secondary" href="{% if admin_mode %}{% url 'user_edit' user_obj.id %}{% else %}{% url 'profile_view' %}{% endif %}">Cancel</a>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

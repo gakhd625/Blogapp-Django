@@ -17,6 +17,10 @@ urlpatterns = [
     path("article-view/<int:article_id>/", views.article_view, name="article_view"),
     path("article-list/", views.article_list, name="article_list"),
     path("admin-panel/", views.admin_panel, name="admin_panel"),
+    # Profile
+    path("profile/", views.profile_view, name="profile_view"),
+    path("profile/edit/", views.profile_edit, name="profile_edit"),
+    path("admin/user/<int:user_id>/profile/", views.admin_profile_edit, name="admin_profile_edit"),
     # User Management
     path("user-list/", views.user_list, name="user_list"),
     path("user-create/", views.user_create, name="user_create"),
