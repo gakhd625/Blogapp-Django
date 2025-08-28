@@ -22,6 +22,7 @@
             <td>
                 <a href="{% url 'article_edit' article.id %}" class="btn btn-sm btn-primary text-white" style="text-decoration: none;">Edit</a>
                 <a href="{% url 'article_delete' article.id %}" class="btn btn-sm btn-danger text-white" style="text-decoration: none;">Delete</a>
+                <a href="{% url 'article_view' article.id %}" class="btn btn-sm btn-secondary text-white" style="text-decoration: none;">View</a>
             </td>
         </tr>
         {% endfor %}

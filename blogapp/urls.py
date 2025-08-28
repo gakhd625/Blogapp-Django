@@ -14,6 +14,7 @@ urlpatterns = [
     path("article-creation/", views.article_creation, name="article_creation"),
     path("article-edit/<int:article_id>/", views.article_edit, name="article_edit"),
     path("article-delete/<int:article_id>/", views.article_delete, name="article_delete"),
+    path("article-view/<int:article_id>/", views.article_view, name="article_view"),
     path("article-list/", views.article_list, name="article_list"),
     path("admin-panel/", views.admin_panel, name="admin_panel"),
     # User Management

@@ -69,12 +69,12 @@
                                 <li class="nav-item"><a class="nav-link {% if request.path == '/article-list' %}active{% endif %}" href="/article-list">Article List</a></li>
                                 <li class="nav-item"><a class="nav-link {% if request.path == '/admin-panel' %}active{% endif %}" href="/admin-panel">Admin Panel</a></li>
                             {% else %}
-                                <!-- Regular users only see Home -->
+
                             {% endif %}
                         {% endif %}
                     </ul>
                     
-                    <!-- Simple Authentication Navigation -->
+                
                     <ul class="navbar-nav">
                         {% if user.is_authenticated %}
                             <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout ({{ user.username }})</a></li>
@@ -88,7 +88,6 @@
         </nav>
 
     <div class="container">
-        <!-- Django Messages -->
         {% if messages %}
             <div class="mt-3">
                 {% for message in messages %}

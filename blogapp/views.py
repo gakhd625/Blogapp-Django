@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.utils import timezone
+from .models import Blog, Article
 import json
 
 # blogs = [
@@ -115,7 +116,8 @@ def user_logout(request):
 def home(request):
     if not request.user.is_authenticated:
         return render(request, "landing.html")
-    return render(request, "home.html")
+    articles = Article.objects.all()
+    return render(request, "home.html", {"articles": articles})
 
 def landing(request):
     return render(request, "landing.html")
@@ -423,6 +425,10 @@ def article_delete(request, article_id):
     
     return render(request, "articles/article_delete.html", {"article": article})
 
+def article_view(request, article_id):
+    article = get_object_or_404(Article, id=article_id)
+    return render(request, "articles/article_view.html", {"article": article})
+
 @admin_required
 def article_list(request):
     articles = Article.objects.filter(user=request.user)
@@ -483,7 +489,6 @@ def user_create(request):
 
         try:
             user = User.objects.create_user(username=username, email=email, password=password1)
-            # Update the profile role
             user.profile.role = role
             user.profile.save()
             

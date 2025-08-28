@@ -60,7 +60,7 @@
                 <tr>
                     <td>Target Blog</td>
                     <td>
-                        <select id="blog-select-ai" class="form-select">
+                        <select id="blog-select-ai" name="blog" class="form-select">
                             <option value="">Select a blog (optional)</option>
                             {% for blog in form.fields.blog.queryset %}
                                 <option value="{{ blog.id }}">{{ blog.name }}</option>
